@@ -1,0 +1,115 @@
+/* General Dashboard */
+.wrap.bin-api-dashboard h2 { margin-bottom: 1em; margin-top: 1.5em; }
+.wrap.bin-api-dashboard .widefat { margin-top: 1em; }
+.wrap.bin-api-dashboard .postbox { margin-bottom: 20px; }
+
+/* Key Generation */
+.key-generation-section .inside { padding: 15px; }
+.key-generation-section label { margin-right: 5px; font-weight: bold; }
+.key-generation-section select { min-width: 200px; }
+#bin-api-generate-key-result { padding: 10px; margin-top: 10px; border-left-width: 4px; border-left-style: solid; }
+#bin-api-generate-key-result.notice-success { border-left-color: #4CAF50; background-color: #f0fff0; }
+#bin-api-generate-key-result.notice-error { border-left-color: #F44336; background-color: #fff0f0;}
+#bin-api-generate-key-result code { background: #eee; padding: 2px 5px; font-size: 1.1em; }
+.key-gen-spinner { visibility: hidden; float: none !important; vertical-align: middle !important; }
+.key-gen-spinner.is-active { visibility: visible; }
+
+/* Managed Keys Section */
+.managed-keys-section .subsubsub { margin-bottom: 1em; } /* Status Filters */
+.managed-keys-section .subsubsub li { display: inline; margin: 0; padding: 0; white-space: nowrap; }
+.managed-keys-section .subsubsub a { display: inline-block; padding: 0.1em 0.5em; margin: 0; text-decoration: none; border-radius: 3px; }
+.managed-keys-section .subsubsub a.current { background-color: #f0f0f1; color: #000; font-weight: 600; }
+.managed-keys-section .subsubsub li:not(:last-child) a::after { content: " |"; color: #ccc; margin-left: 0.5em; }
+
+.managed-keys-section #bin-api-key-search { margin-bottom: 1em; padding: 5px 8px; min-width: 250px; }
+.managed-keys-section .tablenav { height: auto; padding: 5px 0; }
+.managed-keys-section .tablenav .actions select { margin-right: 5px; }
+.managed-keys-section .tablenav .spinner { visibility: hidden; float: none !important; vertical-align: middle !important; }
+.managed-keys-section .tablenav .spinner.is-active { visibility: visible; }
+.managed-keys-section .widefat th#cb, .managed-keys-section .widefat td.check-column { width: 3em; }
+.managed-keys-section .widefat th { text-align: left; }
+
+/* Visual Status Indicators */
+#managed-keys-table-body tr.status-inactive,
+#managed-keys-table-body tr.status-suspended,
+#managed-keys-table-body tr.status-trashed { background-color: #fef7f7; opacity: 0.8; }
+#managed-keys-table-body tr.status-trashed { background-color: #eee; opacity: 0.6; } /* More faded for trashed */
+
+#managed-keys-table-body tr.status-inactive:hover,
+#managed-keys-table-body tr.status-suspended:hover,
+#managed-keys-table-body tr.status-trashed:hover { opacity: 1; }
+
+#managed-keys-table-body tr .status-column .key-status-text {
+    font-weight: bold; padding: 3px 8px; border-radius: 4px; color: #fff;
+    display: inline-block; min-width: 70px; text-align: center; font-size: 0.9em;
+    line-height: 1.5; white-space: nowrap;
+}
+#managed-keys-table-body tr.status-active .status-column .key-status-text { background-color: #228B22; /* ForestGreen */ }
+#managed-keys-table-body tr.status-inactive .status-column .key-status-text { background-color: #DC143C; /* Crimson */ }
+#managed-keys-table-body tr.status-suspended .status-column .key-status-text { background-color: #FFA500; /* Orange */ }
+#managed-keys-table-body tr.status-trashed .status-column .key-status-text { background-color: #AAAAAA; /* Lighter gray */ }
+#managed-keys-table-body tr.status-unknown .status-column .key-status-text { background-color: #808080; /* Gray */ }
+
+/* AJAX Processing */
+.ajax-action-button:disabled,
+#bin-api-generate-key-button:disabled,
+.tablenav .button.action:disabled { cursor: wait; opacity: 0.7; }
+
+/* Action Buttons Grouping & Spacing */
+.actions-column .button-group { display: flex; flex-wrap: wrap; gap: 3px; /* Smaller gap */ }
+.actions-column .button { margin: 0 !important; padding: 2px 8px !important; /* Smaller buttons */ line-height: 1.5 !important; height: auto !important; }
+.actions-column .delete-button,
+.actions-column .trash-button { color: #b32d2e !important; border-color: #b32d2e !important; background: #f8f9fa !important; }
+.actions-column .delete-button:hover,
+.actions-column .trash-button:hover { background: #b32d2e !important; color: #fff !important; border-color: #b32d2e !important; }
+
+
+/* Bulk Action Message Area */
+#bulk-action-message { padding: 10px; margin-top: 10px; border-left-width: 4px; border-left-style: solid; display: none; }
+#bulk-action-message.notice-success { border-left-color: #4CAF50; background: #f0fff0; }
+#bulk-action-message.notice-error { border-left-color: #F44336; background: #fff0f0; }
+
+/* Details Modal Styling */
+#bin-api-key-details-modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0; top: 0; width: 100%; height: 100%;
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+}
+#bin-api-key-details-content {
+    background-color: #fefefe;
+    margin: 10% auto; /* 10% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 600px; /* Maximum width */
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    position: relative;
+}
+#bin-api-key-details-content h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+#bin-api-key-details-content .modal-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: #ddd;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+#bin-api-key-details-content .modal-close:hover {
+    background: #ccc;
+}
+#bin-api-key-details-body .form-table th {
+     width: 150px; /* Adjust width of labels */
+     padding: 8px 10px 8px 0;
+}
+#bin-api-key-details-body .form-table td {
+    padding: 8px 0;
+}
+#bin-api-key-details-body code { background: #eee; padding: 2px 5px; }

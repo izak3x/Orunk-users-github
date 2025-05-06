@@ -1,0 +1,81 @@
+orunk-users/
+├── orunk-users.php               # Main plugin file (updated includes/hooks)
+│
+├── admin/                        # Admin specific classes (UI, Menus, etc.)
+│   ├── class-orunk-admin.php
+│   ├── class-orunk-products.php
+│   ├── class-orunk-reports.php
+│   └── class-orunk-settings.php
+│
+├── includes/                     # Core logic, DB, handlers, gateways
+│   ├── class-orunk-db.php        # Database handler
+│   ├── class-orunk-core.php      # Simplified core logic / Data wrappers
+│   ├── countries.php             # Country list function
+│   ├── class-orunk-access.php    # Access control logic
+│   ├── class-orunk-api-key-manager.php # Handles API key generation
+│   ├── class-orunk-otp-handler.php # OTP logic handler
+│   ├── class-orunk-purchase-manager.php # Handles purchase lifecycle
+│   ├── class-orunk-user-actions.php # Handles user registration/actions
+│   ├── class-orunk-webhook-handler.php # Handles Stripe webhooks
+│   ├── class-orunk-paypal-webhook-handler.php # Handles PayPal webhooks
+│   │
+│   ├── class-orunk-ajax-handlers.php # Handles remaining NON-ADMIN/NON-PROFILE AJAX
+│   │
+│   ├── admin/                    # Admin-specific includes
+│   │   └── ajax/                 # Admin AJAX Handlers
+│   │       ├── admin-ajax-helpers.php
+│   │       ├── admin-features-plans-ajax-handlers.php
+│   │       ├── admin-gateaway-ajax-handlers.php
+│   │       ├── admin-manage-feature-categories-ajax-handlers.php
+│   │       ├── admin-purchase-status-ajax-handlers.php
+│   │       └── admin-users-ajax-handlers.php
+│   │
+│   ├── frontend/                 # Frontend-specific includes
+│   │   └── ajax/                 # Frontend AJAX Handlers
+│   │       └── user-profile-handlers.php
+│   │
+│   ├── abstract-orunk-payment-gateway.php # Base gateway class
+│   │
+│   └── gateways/                 # Specific payment gateways
+│       ├── class-orunk-gateway-bank.php
+│       ├── class-orunk-gateway-paypal.php
+│       └── class-orunk-gateway-stripe.php
+│
+├── public/                       # Frontend specific classes (Display logic)
+│   └── class-orunk-frontend.php
+│
+├── features/                     # Feature-specific integrations
+│   ├── class-feature-ad-removal.php
+│   │
+│   ├── convojet-licensing/       # <-- NEW: Isolated Convojet Feature -->
+│   │   └── class-convojet-license-handler.php # <-- NEW: Handles Convojet logic
+│   │
+│   └── bin-api/                  # Example feature sub-folder
+│       ├── class-feature-bin-api.php
+│       └── endpoints/
+│           └── class-bin-proxy-endpoint.php
+│
+├── languages/                    # Translation files (.pot, .po, .mo)
+│   └── orunk-users.pot
+│
+├── vendor/                       # Composer dependencies (e.g., Stripe/PayPal SDK)
+│   └── autoload.php
+│
+└── assets/                       # CSS, JS, Images (can be split admin/public)
+    ├── css/
+    └── js/
+
+Template files in the Astra theme directory:
+
+wp-content/themes/astra/
+├── page-orunk-signup.php
+├── page-orunk-login.php
+├── admin-interface.php
+├── page-checkout.php
+├── page-order-confirmation.php
+├── page-orunk-catalog.php
+├── page-orunk-logs.php
+├── page-reset-password.php
+├── page-forgot-password.php
+├── page-orunk-order-history.php
+└── page-orunk-dashboard.php
