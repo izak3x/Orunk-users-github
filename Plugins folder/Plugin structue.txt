@@ -47,10 +47,10 @@ orunk-users/
 ├── features/                     # Feature-specific integrations
 │   ├── class-feature-ad-removal.php
 │   │
-│   ├── convojet-licensing/       # <-- NEW: Isolated Convojet Feature -->
-│   │   └── class-convojet-license-handler.php # <-- NEW: Handles Convojet logic
+│   ├── convojet-licensing/       # Convojet Feature
+│   │   └── class-convojet-license-handler.php
 │   │
-│   └── bin-api/                  # Example feature sub-folder
+│   └── bin-api/                  # BIN API Feature
 │       ├── class-feature-bin-api.php
 │       └── endpoints/
 │           └── class-bin-proxy-endpoint.php
@@ -61,9 +61,19 @@ orunk-users/
 ├── vendor/                       # Composer dependencies (e.g., Stripe/PayPal SDK)
 │   └── autoload.php
 │
-└── assets/                       # CSS, JS, Images (can be split admin/public)
+└── assets/                       # CSS, JS, Images
     ├── css/
+    │   └── dashboard-style.css   # Dashboard CSS
     └── js/
+        ├── dashboard/            # <-- NEW: Dashboard JS files -->
+        │   ├── main.js
+        │   ├── profile.js
+        │   ├── billing.js
+        │   ├── services.js
+        │   └── history.js
+        ├── checkout-setup.js     # (Existing Example)
+        ├── checkout-validation.js # (Existing Example)
+        └── checkout-payment.js   # (Existing Example)
 
 Template files in the Astra theme directory:
 

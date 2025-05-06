@@ -117,6 +117,75 @@ function orunk_users_init() {
 
     // Enqueue dashboard CSS (moved function definition outside init for clarity)
     add_action( 'wp_enqueue_scripts', 'orunk_users_enqueue_dashboard_styles' );
+    
+    /**
+ * Enqueue scripts and styles for the Orunk User Dashboard.
+ */
+function orunk_enqueue_dashboard_scripts_styles() {
+    // Only load these scripts on the page using the dashboard template
+    if (is_page_template('page-orunk-dashboard.php')) {
+
+        // Define plugin URL and version safely
+        if (!defined('ORUNK_USERS_PLUGIN_URL')) {
+             // Adjust the path if this code is not in the main plugin file
+             define('ORUNK_USERS_PLUGIN_URL', plugin_dir_url(dirname(__FILE__, (strpos(__FILE__, 'public') !== false ? 2 : 1) )) ); // Go up 1 or 2 levels
+        }
+        $plugin_url = ORUNK_USERS_PLUGIN_URL;
+        $version = defined('ORUNK_USERS_VERSION') ? ORUNK_USERS_VERSION : '1.0.1'; // Increment version
+
+        // Define base path for dashboard JS
+        $dashboard_js_path = $plugin_url . 'assets/js/dashboard/';
+
+        // 1. Enqueue the MAIN script first
+        wp_enqueue_script(
+            'orunk-dashboard-main', // Handle for this script
+            $dashboard_js_path . 'main.js', // Path to the file
+            array('jquery'), // Dependencies
+            $version,        // Version number
+            true             // Load in footer
+        );
+
+        // 2. Enqueue other scripts, making them DEPENDENT on the main script
+        wp_enqueue_script(
+            'orunk-dashboard-profile',
+            $dashboard_js_path . 'profile.js',
+            array('orunk-dashboard-main'), // Depends on main.js
+            $version,
+            true
+        );
+        wp_enqueue_script(
+            'orunk-dashboard-billing',
+            $dashboard_js_path . 'billing.js',
+            array('orunk-dashboard-main'), // Depends on main.js
+            $version,
+            true
+        );
+        wp_enqueue_script(
+            'orunk-dashboard-services',
+            $dashboard_js_path . 'services.js',
+            array('orunk-dashboard-main'), // Depends on main.js
+            $version,
+            true
+        );
+        wp_enqueue_script(
+            'orunk-dashboard-history',
+            $dashboard_js_path . 'history.js',
+            array('orunk-dashboard-main'), // Depends on main.js
+            $version,
+            true
+        );
+
+        // 3. Enqueue the dashboard CSS (ensure this is the correct path)
+        $css_file_path_real = plugin_dir_path(dirname(__FILE__, (strpos(__FILE__, 'public') !== false ? 2 : 1) )) . 'assets/css/dashboard-style.css'; // Adjust path if needed
+        $css_file_url = $plugin_url . 'assets/css/dashboard-style.css';
+        $css_version = file_exists($css_file_path_real) ? filemtime($css_file_path_real) : $version;
+        wp_enqueue_style( 'orunk-dashboard-style', $css_file_url, array(), $css_version );
+
+    }
+}
+// Hook the function to the script loading action
+// Make sure this add_action call is placed where WordPress will run it (not inside a class method unless that method is hooked correctly)
+add_action('wp_enqueue_scripts', 'orunk_enqueue_dashboard_scripts_styles', 20);
 
     // --- Include AJAX Handler Files (Unchanged) ---
     $ajax_admin_handlers_dir = ORUNK_USERS_PLUGIN_DIR . 'includes/admin/ajax/';
