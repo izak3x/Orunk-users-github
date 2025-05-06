@@ -8,7 +8,8 @@ orunk-users/
 │   └── class-orunk-settings.php
 │
 ├── includes/                     # Core logic, DB, handlers, gateways
-│   ├── class-orunk-db.php        # Database handler
+│   ├── class-orunk-db.php 
+       # Database handler
 │   ├── class-orunk-core.php      # Simplified core logic / Data wrappers
 │   ├── countries.php             # Country list function
 │   ├── class-orunk-access.php    # Access control logic
@@ -17,7 +18,8 @@ orunk-users/
 │   ├── class-orunk-purchase-manager.php # Handles purchase lifecycle
 │   ├── class-orunk-user-actions.php # Handles user registration/actions
 │   ├── class-orunk-webhook-handler.php # Handles Stripe webhooks
-│   ├── class-orunk-paypal-webhook-handler.php # Handles PayPal webhooks
+│   
+├── class-orunk-paypal-webhook-handler.php # Handles PayPal webhooks
 │   │
 │   ├── class-orunk-ajax-handlers.php # Handles remaining NON-ADMIN/NON-PROFILE AJAX
 │   │
@@ -25,14 +27,16 @@ orunk-users/
 │   │   └── ajax/                 # Admin AJAX Handlers
 │   │       ├── admin-ajax-helpers.php
 │   │       ├── admin-features-plans-ajax-handlers.php
-│   │       ├── admin-gateaway-ajax-handlers.php
+│   │  
+     ├── admin-gateaway-ajax-handlers.php
 │   │       ├── admin-manage-feature-categories-ajax-handlers.php
 │   │       ├── admin-purchase-status-ajax-handlers.php
 │   │       └── admin-users-ajax-handlers.php
 │   │
 │   ├── frontend/                 # Frontend-specific includes
 │   │   └── ajax/                 # Frontend AJAX Handlers
-│   │       └── user-profile-handlers.php
+│   │     
+  └── user-profile-handlers.php
 │   │
 │   ├── abstract-orunk-payment-gateway.php # Base gateway class
 │   │
@@ -44,16 +48,18 @@ orunk-users/
 ├── public/                       # Frontend specific classes (Display logic)
 │   └── class-orunk-frontend.php
 │
-├── features/                     # Feature-specific integrations
+├── features/ 
+                    # Feature-specific integrations
 │   ├── class-feature-ad-removal.php
 │   │
-│   ├── convojet-licensing/       # Convojet Feature
+│   ├── convojet-licensing/       # <-- Convojet Feature -->
 │   │   └── class-convojet-license-handler.php
 │   │
 │   └── bin-api/                  # BIN API Feature
 │       ├── class-feature-bin-api.php
 │       └── endpoints/
-│           └── class-bin-proxy-endpoint.php
+│       
+    └── class-bin-proxy-endpoint.php
 │
 ├── languages/                    # Translation files (.pot, .po, .mo)
 │   └── orunk-users.pot
@@ -62,8 +68,18 @@ orunk-users/
 │   └── autoload.php
 │
 └── assets/                       # CSS, JS, Images
-    ├── css/
-    │   └── dashboard-style.css   # Dashboard CSS
+    ├── 
+css/
+    │   └── dashboard/            # <-- NEW: Dashboard CSS files -->
+    │       ├── base.css
+    │       ├── cards.css
+    │       ├── buttons.css
+    │       ├── forms.css
+    │       ├── modals.css
+    │       ├── tables.css
+    │       ├── components.css
+    │       └── utilities.css
+    │   └── (optional: original dashboard-style.css removed or empty)
     └── js/
         ├── dashboard/            # <-- NEW: Dashboard JS files -->
         │   ├── main.js

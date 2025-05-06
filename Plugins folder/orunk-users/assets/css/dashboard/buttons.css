@@ -1,0 +1,125 @@
+/* assets/css/dashboard/buttons.css */
+/* Styles for various buttons */
+
+.orunk-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .6rem 1.2rem; /* Adjusted padding */
+    background-color: #4f46e5; /* indigo-600 */
+    color: white;
+    border-radius: 6px; /* rounded-md */
+    text-decoration: none;
+    font-weight: 500; /* font-medium */
+    font-size: .875rem; /* text-sm */
+    border: 1px solid transparent;
+    transition: background-color .2s ease, color .2s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.orunk-button:hover:not(:disabled) {
+    background-color: #4338ca; /* indigo-700 */
+    color: #e5e7eb; /* gray-200 approximation */
+}
+.orunk-button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.orunk-button-outline {
+    background-color: white;
+    color: #4f46e5; /* indigo-600 */
+    border: 1px solid #e0e7ff; /* indigo-100 */
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+}
+.orunk-button-outline:hover:not(:disabled) {
+    background-color: #f5f3ff; /* indigo-50 */
+    border-color: #c7d2fe; /* indigo-200 */
+    color: #6366f1; /* indigo-500 */
+}
+
+.orunk-button-danger {
+    background-color: #ef4444; /* red-500 */
+    color: white;
+    transition: background-color .2s ease, color .2s ease;
+}
+.orunk-button-danger:hover:not(:disabled) {
+    background-color: #dc2626; /* red-600 */
+    color: #fecaca; /* red-200 approximation */
+}
+
+/* Icons inside buttons */
+.orunk-button i,
+.orunk-button-danger i,
+.orunk-button-outline i {
+    margin-right: .5rem; /* mr-2 */
+    font-size: .875em; /* Slightly smaller than text */
+    line-height: 1; /* Prevent icon affecting line height */
+}
+.orunk-button-icon i {
+    margin-right: 0 !important; /* Override for icon-only buttons */
+}
+
+/* Small button variant */
+.orunk-button-sm {
+    padding: .375rem .75rem; /* px-3 py-1.5 */
+    font-size: .75rem; /* text-xs */
+}
+
+/* Download Button Specific Styles */
+.download-plugin-btn .button-spinner {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+    margin-left: 8px;
+    /* Spinner animation is in utilities.css */
+}
+.download-plugin-btn .button-text {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Download Button States */
+.download-plugin-btn.is-downloading .button-text {
+    display: none;
+}
+.download-plugin-btn.is-downloading .button-spinner {
+    display: inline-block !important; /* Ensure spinner shows */
+}
+.download-plugin-btn.is-success {
+    /* Define --success-color if using CSS vars, or replace */
+    background-color: #10b981 !important; /* emerald-500 */
+    border-color: #10b981 !important;
+    cursor: default;
+}
+.download-plugin-btn.is-success .button-text::after {
+    content: ' Started!';
+    animation: floatUp 0.5s ease-out;
+}
+.download-plugin-btn.is-error {
+    /* Define --danger-color if using CSS vars, or replace */
+    background-color: #ef4444 !important; /* red-500 */
+    border-color: #ef4444 !important;
+}
+.download-plugin-btn.is-error .button-text::after {
+    content: ' Failed!';
+    animation: shake 0.5s ease-out;
+}
+
+/* Shine Effect for buttons */
+.shine-effect {
+    position: relative;
+    overflow: hidden;
+}
+.shine-effect::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -75%;
+    width: 50%;
+    height: 200%;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, .3) 50%, rgba(255, 255, 255, 0) 100%);
+    transform: rotate(25deg);
+    animation: shine 4s infinite linear;
+    animation-delay: 2s;
+}

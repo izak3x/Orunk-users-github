@@ -1,0 +1,201 @@
+/* assets/css/dashboard/modals.css */
+/* Styles for modal overlay, content, header, body, footer */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, .65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s linear .2s, opacity .2s ease-in-out;
+    padding: 1rem; /* p-4 */
+}
+.modal-overlay.active {
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 0s;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: .75rem; /* rounded-xl */
+    width: 100%;
+    max-width: 36rem; /* Default max-width (can be overridden) */
+    max-height: 90vh; /* Limit height */
+    overflow-y: auto; /* Add scroll for tall content */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, .1), 0 4px 6px -2px rgba(0, 0, 0, .05);
+    transform: scale(.95);
+    transition: all .2s ease-in-out .05s;
+    border: 1px solid #e5e7eb; /* gray-200 */
+    position: relative; /* Needed for absolute close button */
+}
+
+/* Specific Modal Sizes */
+#plan-modal .modal-content {
+    max-width: 48rem; /* max-w-3xl */
+}
+/* Add others if needed: #profile-modal .modal-content, #billing-modal .modal-content */
+
+
+/* --- Force visible styles for active modal --- */
+body.orunk-dashboard #profile-modal.modal-overlay.active .modal-content,
+body.orunk-dashboard #billing-modal.modal-overlay.active .modal-content,
+body.orunk-dashboard #plan-modal.modal-overlay.active .modal-content {
+    transform: scale(1) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transition-delay: 0.05s !important;
+    z-index: 51 !important; /* Ensure above overlay */
+}
+/* --- End Force Visible --- */
+
+.modal-header {
+    padding: 1rem 1.5rem; /* px-6 py-4 */
+    border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f9fafb; /* bg-gray-50 */
+}
+.modal-header h3 {
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 600; /* font-semibold */
+    color: #1f2937; /* text-gray-800 */
+    margin: 0;
+}
+
+.modal-body {
+    padding: 1.5rem; /* p-6 - Default can be overridden by !p-4 etc. */
+}
+.modal-body.\!p-4 { padding: 1rem !important; } /* Handle Tailwind override class */
+.modal-body.\!pt-4 { padding-top: 1rem !important; }
+
+.modal-footer {
+    padding: .75rem 1.5rem; /* px-6 py-3 */
+    border-top: 1px solid #e5e7eb; /* border-t border-gray-200 */
+    background-color: #f9fafb; /* bg-gray-50 */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: .5rem; /* gap-2 */
+    border-bottom-left-radius: .75rem; /* rounded-bl-xl */
+    border-bottom-right-radius: .75rem; /* rounded-br-xl */
+}
+
+/* --- Profile Modal Specific Layout --- */
+.profile-picture-grid-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    grid-column: 1 / -1; /* Span full width */
+    padding-bottom: .75rem; /* pb-3 */
+    border-bottom: 1px solid #e5e7eb; /* border-b */
+    margin-bottom: .75rem; /* mb-3 */
+    text-align: center;
+}
+.profile-picture-preview {
+    width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid #e5e7eb; background-color: #f1f5f9; display: block; margin: 0 auto .5rem auto;
+}
+.profile-picture-actions {
+    display: flex; flex-direction: column; align-items: center; gap: .25rem; /* gap-1 */
+}
+#profile_picture { /* Hide the actual file input */
+    display: none;
+}
+#profile-details-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .75rem; /* gap-3 */
+    align-items: start;
+}
+#profile-details-section .profile-display-name-item { grid-column: 1 / 2; }
+#profile-details-section .profile-email-item { grid-column: 2 / 3; }
+#profile-details-section .change-password-grid-item {
+    grid-column: 1 / -1;
+    padding-top: .75rem; /* pt-3 */
+    border-top: 1px solid #e5e7eb; /* border-t */
+    margin-top: .75rem; /* mt-3 */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .75rem; /* gap-3 */
+}
+#profile-details-section .current-password-item { grid-column: 1 / -1; }
+#profile-details-section .new-password-item { grid-column: 1 / 2; }
+#profile-details-section .confirm-password-item { grid-column: 2 / 3; }
+#profile-details-section .current-password-item > div:last-child { /* Forgot password button */
+    text-align: right; margin-top: .25rem; /* mt-1 */
+}
+@media (max-width: 640px) { /* sm breakpoint */
+    #profile-details-section { grid-template-columns: 1fr; }
+    #profile-details-section .profile-display-name-item,
+    #profile-details-section .profile-email-item { grid-column: 1 / -1; }
+    #profile-details-section .change-password-grid-item { grid-template-columns: 1fr; }
+    #profile-details-section .new-password-item,
+    #profile-details-section .confirm-password-item { grid-column: 1 / -1; }
+}
+
+/* Forgot Password Section Styling */
+.forgot-password-section {
+    padding-top: .75rem; /* pt-3 */
+    border-top: 1px dashed #e5e7eb; /* border-t border-dashed */
+    margin-top: .75rem; /* mt-3 */
+}
+.forgot-password-section .form-description { margin-bottom: .5rem; }
+#modal-feedback-forgot, #modal-feedback-verify, #modal-feedback-reset {
+    text-align: left; font-size: .75rem; /* text-xs */ margin-top: .5rem; /* mt-2 */ min-height: 1.25rem; /* h-5 */
+}
+#modal-feedback-forgot.success, #modal-feedback-verify.success, #modal-feedback-reset.success {
+    color: #10b981; /* text-green-600 */
+}
+#modal-feedback-forgot.error, #modal-feedback-verify.error, #modal-feedback-reset.error {
+    color: #ef4444; /* text-red-600 */
+}
+.forgot-password-footer-buttons {
+    display: flex; justify-content: space-between; align-items: center; margin-top: .75rem; /* mt-3 */
+}
+
+/* --- Billing Modal Specifics --- */
+#billing-form .grid { gap: .75rem; /* gap-3 */ }
+
+/* Plan Change Modal Specifics */
+#current-plan-info { /* Style the current plan info box */
+    /* Uses Tailwind: mb-3 p-3 bg-indigo-50 border border-indigo-200 rounded-md text-sm */
+}
+#plan-renewal-section { /* Styles for the renewal section */
+    /* Uses Tailwind: text-xs text-gray-500 flex justify-between items-center mb-3 p-3 border-t border-b border-gray-100 */
+}
+#plan-modal-options { /* Plan card container */
+    /* Uses Tailwind: grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-3 max-h-[45vh] overflow-y-auto p-1 */
+}
+#plan-modal-options .spinner { /* Center spinner if no plans */
+    /* Uses Tailwind: flex justify-center items-center p-8 md:col-span-2 lg:col-span-3 */
+}
+
+#profile-form-footer { /* Specific footer alignment */
+    display: flex; justify-content: flex-end;
+}
+.modal-footer #plan-modal-cancel-form { /* Push cancel button to left */
+    margin-right: auto;
+}
+#modal-feedback-plan { /* Feedback position */
+    /* Uses Tailwind: text-xs text-right mr-auto h-4 order-first w-full md:w-auto md:order-none */
+}
+.modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: #9ca3af; /* gray-400 */
+    line-height: 1;
+    padding: .25rem;
+}
+.modal-close-btn:hover {
+    color: #1f2937; /* gray-800 */
+}

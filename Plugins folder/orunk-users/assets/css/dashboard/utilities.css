@@ -1,0 +1,60 @@
+/* assets/css/dashboard/utilities.css */
+/* Helper classes and animations */
+
+.hidden {
+    display: none !important; /* Use important if needed to override */
+}
+
+.visually-hidden { /* For screen readers */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* Spinner Base Styles */
+.spinner {
+    width: 1rem; /* w-4 */
+    height: 1rem; /* h-4 */
+    border: 2px solid rgba(79, 70, 229, .2); /* border-2 border-indigo-600/20 */
+    border-radius: 50%;
+    border-top-color: #4f46e5; /* border-t-indigo-600 */
+    animation: spin 1s ease-in-out infinite;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 6px; /* ml-1.5 */
+}
+
+.spinner-inline { /* Modifier for inline spinners */
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 6px;
+}
+
+/* Keyframes */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes shine {
+    0% { left: -75%; }
+    40% { left: 125%; }
+    100% { left: 125%; }
+}
+
+@keyframes floatUp {
+    0% { opacity: 0; transform: translateY(5px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    50% { transform: translateX(3px); }
+    75% { transform: translateX(-3px); }
+}

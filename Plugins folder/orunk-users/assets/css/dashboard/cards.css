@@ -1,0 +1,129 @@
+/* assets/css/dashboard/cards.css */
+/* Styles for card components */
+
+.styled-card {
+    background: white;
+    border-radius: 0.75rem; /* rounded-xl */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, .1), 0 2px 4px -1px rgba(0, 0, 0, .06); /* shadow-lg */
+    border: 1px solid #e5e7eb; /* border-gray-200 */
+    overflow: hidden;
+    margin-bottom: 1.5rem; /* mb-6 */
+    display: flex;
+    flex-direction: column;
+}
+
+.styled-card-header {
+    padding: 1rem 1.5rem; /* px-6 py-4 */
+    border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #f9fafb; /* bg-gray-50 */
+}
+
+.styled-card-header h2,
+.styled-card-header h3 {
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 600; /* font-semibold */
+    color: #1f2937; /* text-gray-800 */
+    margin: 0;
+}
+
+.styled-card-body {
+    padding: 1.5rem; /* p-6 */
+    flex-grow: 1; /* Allow body to take up space */
+}
+
+.styled-card-footer {
+    padding: 1rem 1.5rem; /* px-6 py-4 */
+    border-top: 1px solid #e5e7eb; /* border-t border-gray-200 */
+    background-color: #f9fafb; /* bg-gray-50 */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.75rem; /* gap-3 */
+}
+
+/* Specific card types */
+.service-card {
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+.service-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,.05); /* Subtle shadow */
+}
+.service-divider { /* Used within service cards? */
+    margin: .75rem 0;
+    border-top: 1px solid #f1f5f9; /* gray-100 */
+}
+
+/* Plan selection cards (in modal) */
+.plan-card {
+    border: 1px solid #e5e7eb; /* gray-200 */
+    border-radius: .5rem; /* rounded-lg */
+    padding: .75rem; /* p-3 */
+    transition: all .2s ease;
+    cursor: pointer;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.plan-card:hover {
+    border-color: #4f46e5; /* indigo-600 */
+}
+.plan-card.selected {
+    border-color: #4f46e5; /* indigo-600 */
+    background-color: #f5f3ff; /* indigo-50 */
+    box-shadow: 0 0 0 1px #4f46e5; /* ring-1 ring-indigo-600 */
+}
+.plan-card .plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: .25rem; /* mb-1 */
+}
+.plan-card .plan-name {
+    font-weight: 500; /* font-medium */
+    font-size: .875rem; /* text-sm */
+    color: #374151; /* text-gray-700 */
+}
+.plan-card .plan-desc {
+    font-size: .75rem; /* text-xs */
+    color: #6b7280; /* text-gray-500 */
+    margin-top: .1rem;
+}
+.plan-card .plan-pricing {
+    text-align: right;
+}
+.plan-card .price {
+    font-size: 1.1rem;
+    font-weight: 600; /* font-semibold */
+    color: #4f46e5; /* text-indigo-600 */
+}
+.plan-card .period {
+    font-size: .7rem;
+    color: #6b7280; /* text-gray-500 */
+}
+.plan-card .price-diff {
+    font-size: .7rem;
+}
+.plan-features {
+    list-style-type: none;
+    padding: 0;
+    margin: .5rem 0; /* my-2 */
+    font-size: .8rem;
+    flex-grow: 1; /* Push content down */
+}
+.plan-features li {
+    padding: .15rem 0; /* py-0.5 */
+    display: flex;
+    align-items: center;
+}
+.plan-features li i {
+    margin-right: .4rem; /* mr-1.5 */
+    color: #4f46e5; /* indigo-600 */
+    font-size: .7rem;
+    width: 1em;
+    text-align: center;
+    flex-shrink: 0;
+}
