@@ -162,7 +162,7 @@ get_header();
         </section>
 
         <div id="product-grid-section" class="relative">
-            <div id="product-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 min-h-[300px]">
+            <div id="product-grid-container" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 min-h-[300px]">
                  <div class="loading-spinner-overlay">
                     <div class="loading-spinner"></div>
                 </div>
