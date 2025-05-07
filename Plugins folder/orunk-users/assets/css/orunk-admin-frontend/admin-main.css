@@ -1,0 +1,169 @@
+/* orunk-users/assets/css/orunk-admin-frontend/admin-main.css */
+
+/* Minimal Global Styles & Tailwind Overrides (Inspired by admin-interface.php) */
+:root {
+    --primary-color: #4f46e5; /* Indigo-600 */
+    --primary-hover: #4338ca; /* Indigo-700 */
+    --secondary-bg: #f9fafb;  /* Cool Gray 50 / Tailwind gray-50 */
+    --border-color: #e5e7eb; /* Cool Gray 200 / Tailwind gray-200 */
+    --danger-color: #ef4444;  /* Red-500 */
+    --danger-hover: #dc2626; /* Red-600 */
+    --success-color: #10b981; /* Emerald 500 */
+    --warning-color: #f59e0b; /* Amber 500 */
+    --text-main: #1f2937; /* Cool Gray 800 / Tailwind gray-800 */
+    --text-secondary: #6b7280; /* Cool Gray 500 / Tailwind gray-500 */
+    --text-light: #f9fafb; /* Cool Gray 50 */
+}
+/* Ensure body class from template is used if Tailwind is not automatically applying base styles */
+body.orunk-frontend-admin-page { /* Example if you add 'orunk-frontend-admin-page' via body_class() */
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    background-color: #f3f4f6; /* Tailwind gray-100 */
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.card {
+    background-color: white;
+    border-radius: 0.5rem; /* rounded-lg */
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,.07), 0 1px 2px -1px rgba(0,0,0,.07); /* shadow-md */
+    border: 1px solid var(--border-color);
+}
+.card-header {
+    padding: 1rem 1.5rem; /* px-6 py-4 */
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem; /* gap-3 */
+    background-color: var(--secondary-bg);
+    border-top-left-radius: 0.5rem; /* rounded-t-lg */
+    border-top-right-radius: 0.5rem; /* rounded-t-lg */
+}
+.card-body { padding: 1.5rem; /* p-6 */ }
+
+/* Table Styles */
+.table-wrapper { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 0.375rem; /* rounded-md */ }
+.data-table { min-width: 100%; divide-y divide-gray-200; } /* Use with <tbody class="divide-y divide-gray-200"> */
+.data-table th {
+    background-color: var(--secondary-bg);
+    padding: 0.75rem 1rem; /* px-4 py-3 */
+    text-align: left; font-size: 0.75rem; /* text-xs */
+    font-weight: 600; /* font-semibold */ color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.05em; /* tracking-wider */
+}
+.data-table td {
+    padding: 0.75rem 1rem; /* px-4 py-3 */
+    vertical-align: middle; font-size: 0.875rem; /* text-sm */
+    color: var(--text-main);
+    /* border-top: 1px solid var(--border-color);  Handled by divide-y on tbody */
+}
+.data-table tbody tr:hover { background-color: #f9fafb; /* gray-50 */ }
+
+/* Loading Spinner & Placeholders */
+.loading-placeholder { display: flex; justify-content: center; align-items: center; padding: 2rem; color: #6b7280; /* gray-500 */ }
+.loading-spinner {
+    border: 3px solid rgba(0, 0, 0, .1);
+    border-left-color: var(--primary-color);
+    border-radius: 50%; width: 24px; height: 24px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner-inline { vertical-align: middle; width: 14px; height: 14px; border-width: 2px; margin-left: 6px; }
+
+/* Modal Styles */
+.modal-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.65); display: flex; align-items: center; justify-content: center; z-index: 1050; /* Higher z-index for admin */ visibility: hidden; opacity: 0; transition: visibility 0s linear 0.2s, opacity 0.2s ease-in-out; padding: 1rem; }
+.modal-overlay.active { visibility: visible; opacity: 1; transition-delay: 0s; }
+.modal-content { background-color: white; padding: 1.5rem 2rem; border-radius: 0.5rem; /* rounded-lg */ max-width: 95%; width: 700px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,.1), 0 10px 10px -5px rgba(0,0,0,.04); transform: scale(0.95); opacity: 0; transition: all 0.2s ease-in-out .05s; }
+.modal-overlay.active .modal-content { transform: scale(1); opacity: 1; }
+.modal-close-btn { position: absolute; top: 0.75rem; right: 0.75rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #9ca3af; /* gray-400 */ line-height: 1; padding: 0.25rem; border-radius: 9999px; }
+.modal-close-btn:hover { color: var(--text-main); background-color: #f3f4f6; /* gray-100 */ }
+
+/* Tab Navigation Styles */
+.tab-button {
+    position: relative; padding: 0.75rem 1rem; /* py-3 px-4 */
+    margin-right: 0.25rem; /* space-x-1 equivalent */
+    font-size: 0.875rem; /* text-sm */ font-weight: 500; /* font-medium */
+    color: var(--text-secondary); border-bottom: 3px solid transparent;
+    transition: all 0.2s ease; cursor: pointer;
+    white-space: nowrap;
+}
+.tab-button:hover { color: var(--primary-color); }
+.tab-button.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    font-weight: 600; /* font-semibold */
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Form elements (Minimal, relies on Tailwind @forms plugin + theme styles) */
+.form-label { display: block; margin-bottom: 0.25rem; font-size: 0.75rem; /* text-xs */ font-weight: 500; /* font-medium */ color: #4b5563; /* gray-600 */ }
+.form-input, .form-textarea, .form-select {
+    /* Tailwind's @forms plugin should handle base styling. */
+}
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color); /* Tailwind focus ring style */
+    outline: none;
+}
+.form-description { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; }
+.slug-input { font-family: monospace; font-size: 0.8rem !important; background-color: #f9fafb; /* gray-50 */ }
+.form-checkbox { /* Tailwind @forms plugin handles this */ }
+
+/* Button Styles */
+.button { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; border: 1px solid transparent; border-radius: 0.375rem; /* rounded-md */ font-size: 0.875rem; /* text-sm */ font-weight: 500; /* font-medium */ cursor: pointer; transition: all 0.15s ease-in-out; text-decoration: none !important; line-height: 1.25; box-shadow: 0 1px 2px 0 rgba(0,0,0,.05); }
+.button:focus { outline: 2px solid transparent; outline-offset: 2px; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.5); /* Example focus ring */ }
+.button-primary { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+.button-primary:hover:not(:disabled) { background-color: var(--primary-hover); border-color: var(--primary-hover); color: white; } /* Ensure text remains white */
+.button-secondary { background-color: white; color: var(--text-main); border-color: var(--border-color); }
+.button-secondary:hover:not(:disabled) {
+    background-color: #f3f4f6; /* Tailwind gray-100 - A bit darker than gray-50 */
+    border-color: #d1d5db; /* Tailwind gray-300 */
+    color: var(--primary-color); /* UPDATED: Make text primary color on hover */
+}
+.button-danger { background-color: var(--danger-color); color: white; border-color: var(--danger-color); }
+.button-danger:hover:not(:disabled) { background-color: var(--danger-hover); border-color: var(--danger-hover); color: white; } /* Ensure text remains white */
+.button-sm { padding: 0.375rem 0.75rem; font-size: 0.75rem; /* text-xs */ }
+.button-link { background: none; border: none; padding: 0; color: var(--primary-color); text-decoration: none; cursor: pointer; font-weight: 500; box-shadow: none; }
+.button-link:hover:not(:disabled) { text-decoration: underline; color: var(--primary-hover); }
+.button-link-danger { color: var(--danger-color); }
+.button-link-danger:hover:not(:disabled) { color: var(--danger-hover); }
+
+.button i, .button-sm i, .button-link i { margin-right: 0.35rem; font-size: 0.9em; }
+/* Ensure icon color inherits from button text color, especially on hover */
+.button:hover i, .button-sm:hover i, .button-link:hover i {
+    color: inherit;
+}
+
+
+.hidden { display: none !important; }
+
+/* Status Badges */
+.status-badge { display: inline-flex; align-items: center; padding: 0.125rem 0.5rem; font-size: 0.7rem; font-weight: 500; border-radius: 9999px; text-transform: capitalize; line-height: 1.2; border: 1px solid transparent; }
+.status-badge.active, .status-active { background-color: #dcfce7; color: #15803d; border-color: #a7f3d0; }
+.status-badge.pending, .status-badge.pending-payment { background-color: #fef9c3; color: #a16207; border-color: #fde68a; }
+.status-badge.expired, .status-badge.cancelled, .status-badge.failed { background-color: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+.status-badge.inactive, .status-badge.disabled, .status-badge.switched { background-color: #f3f4f6; color: #4b5563; border-color: #e5e7eb; }
+
+/* Specific Admin Panel Styles */
+/* .admin-panel-main-header { } */
+/* .admin-panel-main-nav { } */
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .admin-panel-main-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .admin-panel-main-header > div:last-child {
+        margin-top: 1rem;
+    }
+    .tab-button {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+    }
+}

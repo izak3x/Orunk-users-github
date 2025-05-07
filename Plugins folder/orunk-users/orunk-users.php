@@ -59,6 +59,15 @@ foreach($core_files as $file) {
     }
 }
 
+// Include Frontend Archive AJAX Handlers
+$archive_product_ajax_handler_file = ORUNK_USERS_PLUGIN_DIR . 'includes/frontend/ajax/archive-product-handlers.php';
+if ( file_exists( $archive_product_ajax_handler_file ) ) {
+    require_once $archive_product_ajax_handler_file;
+} else {
+    error_log('Orunk Users Error: archive-product-handlers.php not found.');
+}
+
+
 // --- Activation Hook (Unchanged) ---
 function orunk_users_activate() {
     error_log('Orunk Users: Running Activation Hook...');
@@ -99,6 +108,17 @@ function orunk_users_check_version() {
     }
 }
 add_action('plugins_loaded', 'orunk_users_check_version', 22); // Priority 22
+
+
+// In orunk-users.php
+// ... other includes ...
+$stats_hooks_file = ORUNK_USERS_PLUGIN_DIR . 'includes/stats-tracking-hooks.php';
+if (file_exists($stats_hooks_file)) {
+    require_once $stats_hooks_file;
+} else {
+    error_log('Orunk Users Error: stats-tracking-hooks.php not found.');
+}
+// ...
 
 
 /**
@@ -192,6 +212,77 @@ function orunk_enqueue_dashboard_scripts_styles() {
 }
 // Hook the function to the script loading action (ensure this line exists and runs)
 add_action('wp_enqueue_scripts', 'orunk_enqueue_dashboard_scripts_styles', 20);
+
+/**
+ * Enqueue scripts and styles for the Orunk Frontend Admin Interface.
+ */
+function orunk_enqueue_frontend_admin_assets() {
+    // Only load these assets on the page using our custom template
+    // Ensure 'orunk-admin-frontend.php' is the correct template filename in your theme.
+    if ( is_page_template( 'orunk-admin-frontend.php' ) ) {
+
+        $plugin_url = ORUNK_USERS_PLUGIN_URL; // Assuming ORUNK_USERS_PLUGIN_URL is defined
+        $plugin_dir = ORUNK_USERS_PLUGIN_DIR; // Assuming ORUNK_USERS_PLUGIN_DIR is defined
+        $version = defined( 'ORUNK_USERS_VERSION' ) ? ORUNK_USERS_VERSION : '1.0.0';
+
+        // --- Enqueue Main CSS for Frontend Admin ---
+        $css_file_path = $plugin_dir . 'assets/css/orunk-admin-frontend/admin-main.css';
+        $css_file_url = $plugin_url . 'assets/css/orunk-admin-frontend/admin-main.css';
+        if ( file_exists( $css_file_path ) ) {
+            wp_enqueue_style(
+                'orunk-frontend-admin-main-style',
+                $css_file_url,
+                array(), // Add dependencies if any (e.g., Font Awesome if not loaded by template)
+                filemtime( $css_file_path ) // Versioning for cache busting
+            );
+        } else {
+            // Log error or add admin notice if critical CSS is missing
+            error_log('Orunk Users Error: admin-main.css not found at ' . $css_file_path);
+        }
+
+        // --- Enqueue JavaScript Files ---
+        $js_base_url = $plugin_url . 'assets/js/orunk-admin-frontend/';
+        $js_base_dir = $plugin_dir . 'assets/js/orunk-admin-frontend/';
+
+        // Core/Main JS - should be loaded first if others depend on it
+        $admin_main_js_path = $js_base_dir . 'admin-main.js';
+        if ( file_exists( $admin_main_js_path ) ) {
+            wp_enqueue_script(
+                'orunk-frontend-admin-main',
+                $js_base_url . 'admin-main.js',
+                array( 'jquery' ), // jQuery is a common dependency
+                filemtime( $admin_main_js_path ),
+                true // Load in footer
+            );
+        } else {
+            error_log('Orunk Users Error: admin-main.js not found at ' . $admin_main_js_path);
+        }
+
+        // Section-specific JS files - list them and set 'orunk-frontend-admin-main' as a dependency
+        $js_modules = [
+            'users-purchases' => 'admin-users-purchases.js',
+            'features-plans'  => 'admin-features-plans.js',
+            'categories'      => 'admin-categories.js',
+            'payment-gateways'=> 'admin-payment-gateways.js',
+        ];
+
+        foreach ( $js_modules as $handle_suffix => $filename ) {
+            $file_path = $js_base_dir . $filename;
+            if ( file_exists( $file_path ) ) {
+                wp_enqueue_script(
+                    'orunk-frontend-admin-' . $handle_suffix,
+                    $js_base_url . $filename,
+                    array( 'orunk-frontend-admin-main' ), // Depends on the main admin JS
+                    filemtime( $file_path ),
+                    true
+                );
+            } else {
+                 error_log('Orunk Users Error: ' . $filename . ' not found at ' . $file_path);
+            }
+        }
+    }
+}
+add_action( 'wp_enqueue_scripts', 'orunk_enqueue_frontend_admin_assets', 20 );
 
     // --- Include AJAX Handler Files (Unchanged) ---
     $ajax_admin_handlers_dir = ORUNK_USERS_PLUGIN_DIR . 'includes/admin/ajax/';

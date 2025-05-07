@@ -1,15 +1,16 @@
 <?php
 /**
- * Template Name: Orunk Catalog (Styled + Responsive + Ads + FAQ)
+ * Template Name: Orunk Catalog (Tailwind Card V3 + Filters + Search + FAQ)
  *
- * This template displays the available product features and their purchasable plans
- * using data from the Orunk Users plugin, styled with CSS Grid and classes.
- * Includes embedded CSS, responsive layout, ad sidebars, and FAQ section.
+ * This template displays product features in a filterable grid layout
+ * styled with Tailwind CSS utility classes. Includes refined compact product cards
+ * with badge, meta-data (dummy), and footer sections.
+ * **Requires Tailwind CSS to be configured in the active theme.**
  *
  * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
  *
  * @package Astra
- * @since 1.0.0
+ * @since 1.0.4
  */
 
 // Ensure the Orunk Users core class is available
@@ -18,17 +19,11 @@ if (!class_exists('Custom_Orunk_Core')) {
     ?>
     <div id="primary" <?php astra_primary_class(); ?>>
         <main id="main" class="site-main">
-            <div class="ast-container">
-                <div class="ast-row">
-                    <div class="ast-col-lg-12 ast-col-md-12 ast-col-sm-12 ast-col-xs-12">
-                        <div class="entry-content clear" itemprop="text">
-                            <?php /* Removed the default H1 title display */ ?>
-                            <p class="orunk-error notice notice-error">
-                                <?php esc_html_e('Error: The required Orunk Users plugin component is not available. Please ensure the plugin is active.', 'orunk-users'); ?>
-                            </p>
-                        </div>
-                    </div>
-                </div>
+            <div class="container mx-auto px-4 py-8">
+                 <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded" role="alert">
+                    <p class="font-bold"><?php esc_html_e('Error', 'orunk-users'); ?></p>
+                    <p><?php esc_html_e('The required Orunk Users plugin component is not available. Please ensure the plugin is active.', 'orunk-users'); ?></p>
+                 </div>
             </div>
         </main>
     </div>
@@ -37,590 +32,426 @@ if (!class_exists('Custom_Orunk_Core')) {
     return; // Stop further execution
 }
 
-// Instantiate the core class to access its methods
+// Instantiate the core class
 $orunk_core = new Custom_Orunk_Core();
 
-// --- Get Data for Display ---
-$features_with_plans = $orunk_core->get_product_features_with_plans(); // Get all features and their active plans
-$user_id = get_current_user_id(); // Get current logged-in user ID (0 if not logged in)
-$available_gateways = $orunk_core->get_available_payment_gateways(); // Get enabled payment gateways
+// --- Get Data ---
+// ** IMPORTANT: Ensure this function provides all necessary data **
+$features_with_plans = $orunk_core->get_product_features_with_plans();
+$user_id = get_current_user_id();
 
-get_header(); // Include theme header
+// --- Static Category List & Map ---
+$static_categories = [
+    ['category_slug' => 'api-service', 'category_name' => __('API', 'orunk-users')], // Shortened name
+    ['category_slug' => 'website-feature', 'category_name' => __('Feature', 'orunk-users')], // Shortened name
+    ['category_slug' => 'wordpress-plugin', 'category_name' => __('Plugin', 'orunk-users')], // Shortened name
+    ['category_slug' => 'wordpress-theme', 'category_name' => __('Theme', 'orunk-users')], // Shortened name
+];
+// Filter the static list to only include categories present in the products
+$present_category_slugs = array_unique(array_column($features_with_plans ?? [], 'category'));
+$filtered_catalog_categories = array_filter($static_categories, function($cat) use ($present_category_slugs) {
+    return in_array($cat['category_slug'], $present_category_slugs);
+});
+// Create a lookup map for category names
+$category_name_map = [];
+foreach ($filtered_catalog_categories as $cat) {
+    $category_name_map[$cat['category_slug']] = $cat['category_name'];
+}
+
+get_header();
 ?>
 
-<?php // --- EMBEDDED CSS --- ?>
-<style>
-    /* --- Base & Layout --- */
-    .orunk-page-wrapper {
-        display: grid;
-        grid-template-columns: 1fr; /* Default: single column */
-        gap: 1.5rem; /* Gap between columns */
-        max-width: 1400px; /* Max width for the entire layout */
-        margin: 1rem auto; /* Centering and top/bottom margin */
-        padding: 0 1rem; /* Padding on smaller screens */
-    }
-
-    .orunk-main-content {
-        grid-column: 1 / -1; /* Span full width by default */
-        min-width: 0; /* Prevent content overflow */
-    }
-
-    .orunk-sidebar {
-        width: 180px; /* Width for ad sidebars */
-        flex-shrink: 0;
-        /* Hide sidebars by default, show on larger screens */
-        display: none;
-    }
-
-    .orunk-sidebar-left { order: -1; } /* Position left sidebar first visually if needed */
-    .orunk-sidebar-right { }
-
-    /* Responsive Layout: Show sidebars and adjust grid on larger screens */
-    @media (min-width: 1024px) { /* lg breakpoint */
-        .orunk-page-wrapper {
-            /* 3 columns: Left Ad - Main Content - Right Ad */
-            grid-template-columns: 180px 1fr 180px;
-            padding: 0; /* Remove padding when sidebars are visible */
-        }
-        .orunk-main-content {
-            grid-column: 2 / 3; /* Place main content in the middle column */
-        }
-        .orunk-sidebar {
-            display: block; /* Show sidebars */
-            /* Optional: Add sticky positioning */
-            /* position: sticky; */
-            /* top: 2rem; */
-            /* height: calc(100vh - 4rem); */ /* Adjust height based on header/footer */
-            /* overflow-y: auto; */
-        }
-    }
-    @media (min-width: 1280px) { /* xl breakpoint - wider sidebars? */
-        .orunk-page-wrapper {
-             grid-template-columns: 200px 1fr 200px; /* Slightly wider sidebars */
-             gap: 2rem;
-        }
-         .orunk-sidebar { width: 200px; }
-    }
-
-
-    /* --- Catalog Styling --- */
-    .orunk-catalog-container {
-       /* Removed max-width/margin from here, handled by orunk-page-wrapper */
-       padding: 0; /* Remove padding if handled by wrapper */
-    }
-
-    /* Removed entry-title style as title is removed */
-
-    /* Error/Notice Styling */
-    .orunk-error, .orunk-purchase-error, .orunk-payment-error {
-        border-left-width: 4px !important;
-        padding: 1em !important;
-        margin-bottom: 1.5rem;
-        border-radius: 4px;
-        background-color: #fef2f2 !important;
-        border-color: #f87171 !important;
-        color: #991b1b !important;
-    }
-    .orunk-error p, .orunk-purchase-error p, .orunk-payment-error p { margin: 0 !important; padding: 0 !important; }
-    .orunk-error strong, .orunk-purchase-error strong, .orunk-payment-error strong { color: #7f1d1d !important; }
-
-
-    /* Feature Section Styling */
-    .orunk-feature-section {
-        background-color: #fff; /* White background */
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        margin-bottom: 2.5rem;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .orunk-feature-section h2 {
-        font-size: 1.5em;
-        margin-top: 0;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-        color: #1f2937;
-    }
-
-    .orunk-feature-description {
-        color: #6b7280;
-        margin-bottom: 1rem;
-        font-size: 0.95em;
-        line-height: 1.6;
-    }
-
-    /* Current Plan Info Box */
-    .orunk-current-plan-info {
-        padding: 10px 15px;
-        margin-bottom: 1rem;
-        border-left-width: 4px;
-        background-color: #eff6ff;
-        border-color: #60a5fa;
-        color: #1e40af;
-        border-radius: 4px;
-        font-size: 0.9em;
-    }
-    .orunk-current-plan-info p { margin: 0; }
-    .orunk-current-plan-info strong { color: #1c3d5a; }
-    .orunk-current-plan-info a { color: #1d4ed8; text-decoration: underline; margin-left: 10px; }
-
-    /* --- Grid Layout for Plans --- */
-    .orunk-pricing-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Slightly larger min width */
-        gap: 1.5rem; /* Increased gap */
-        margin-top: 1.5rem;
-    }
-    /* Adjust grid columns on smaller screens if needed */
-    @media (max-width: 640px) { /* sm breakpoint */
-         .orunk-pricing-grid {
-            grid-template-columns: 1fr; /* Stack to single column */
-         }
-    }
-
-
-    /* --- Plan Card Styling --- */
-    .orunk-plan-card {
-        border: 1px solid #e5e7eb;
-        background: #fff;
-        padding: 1.25rem;
-        border-radius: 0.5rem;
-        display: flex;
-        flex-direction: column;
-        transition: all 0.2s ease-in-out;
-        position: relative;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    }
-
-    .orunk-plan-card:hover {
-        border-color: #a5b4fc;
-        box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.07), 0 2px 8px -1px rgba(0, 0, 0, 0.04);
-        transform: translateY(-2px);
-    }
-
-    .orunk-plan-card.orunk-plan--active {
-        border-color: #10b981;
-        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
-    }
-
-    .orunk-plan-card.orunk-plan--active::after {
-        content: 'Active'; position: absolute; top: 0.75rem; right: 0.75rem; background-color: #10b981; color: white; font-size: 0.65rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;
-    }
-
-    .orunk-plan-card h3 {
-        margin-top: 0; margin-bottom: 0.75rem; font-size: 1.15em; /* Slightly larger */ font-weight: 600; color: #1f2937;
-    }
-
-    .orunk-plan-price {
-        margin-bottom: 1rem; font-weight: 600; color: #1f2937;
-    }
-    .orunk-plan-price strong { font-size: 1.5em; /* Larger price */ }
-    .orunk-plan-price .duration { font-size: 0.8em; color: #6b7280; font-weight: 400; }
-
-    .orunk-plan-description {
-        font-size: 0.9em; color: #6b7280; flex-grow: 1; margin-bottom: 1rem; line-height: 1.5;
-    }
-
-    .orunk-plan-features {
-        list-style: none; margin: 0 0 1rem 0; padding: 0.75rem 0 0 0; /* Increased padding-top */ font-size: 0.85em; color: #4b5563; flex-grow: 1; border-top: 1px solid #f3f4f6; margin-top: 1rem;
-    }
-    .orunk-plan-features li {
-        display: flex; align-items: center; padding-left: 0; margin-bottom: 0.5rem; position: static;
-    }
-    .orunk-plan-features .feature-icon {
-        position: static; margin-right: 0.5rem; flex-shrink: 0; width: 1em; text-align: center; color: #34d399; font-size: 1em; line-height: 1.4;
-    }
-
-    .orunk-plan-action { margin-top: auto; padding-top: 1rem; }
-
-    /* Button Styling */
-    .orunk-plan-action .button {
-        display: block; width: 100%; text-align: center; padding: 0.7rem 1rem; /* Slightly larger padding */ font-size: 0.9em; font-weight: 600; /* Bolder */ border-radius: 0.375rem; cursor: pointer; transition: all 0.2s ease-in-out; border: 1px solid transparent; line-height: 1.5;
-    }
-    .orunk-plan-action .button:hover:not(:disabled) {
-        transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .orunk-plan-action .button i { margin-right: 0.4em; font-size: 0.9em; }
-
-    .orunk-plan-action .orunk-button-primary { background-color: #4f46e5; color: white; border-color: #4f46e5; }
-    .orunk-plan-action .orunk-button-primary:hover:not(:disabled) { background-color: #4338ca; border-color: #4338ca; }
-
-    .orunk-plan-action .orunk-button-active { background: #10b981; color: white; border-color: #10b981; cursor: default; opacity: 1 !important; }
-    .orunk-plan-action .orunk-button-active:hover { transform: none; box-shadow: none; }
-
-    .orunk-plan-action .orunk-button-disabled,
-    .orunk-plan-action .orunk-button-upgrade[disabled] { background-color: #e5e7eb; color: #9ca3af; border-color: #d1d5db; cursor: not-allowed; opacity: 0.7; }
-    .orunk-plan-action .orunk-button-disabled:hover,
-    .orunk-plan-action .orunk-button-upgrade[disabled]:hover { transform: none; box-shadow: none; }
-
-    /* Payment Gateway Selection */
-    .orunk-payment-gateways label { display: block; margin-bottom: 5px; font-size: 0.85em; color: #4b5563; font-weight: 500; }
-    .orunk-payment-gateways select { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.9em; background-color: white; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; }
-    .orunk-payment-gateways select:focus { border-color: #a5b4fc; outline: 1px solid #a5b4fc; }
-
-
-    /* --- FAQ Section Styling --- */
-    .orunk-faq-section {
-        margin-top: 4rem; /* More space above FAQ */
-        padding-top: 2rem;
-        border-top: 1px solid #e5e7eb;
-    }
-    .orunk-faq-section h2 {
-        font-size: 1.75em;
-        font-weight: 700;
-        color: #1f2937;
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-    .orunk-faq-grid {
-        display: grid;
-        grid-template-columns: 1fr; /* Stack on small screens */
-        gap: 1.5rem;
-    }
-    @media (min-width: 768px) { /* md breakpoint */
-        .orunk-faq-grid {
-            grid-template-columns: repeat(2, 1fr); /* Two columns on medium screens */
-        }
-    }
-    .orunk-faq-item details {
-        background-color: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.5rem;
-        margin-bottom: 1rem;
-        transition: box-shadow 0.2s ease;
-    }
-    .orunk-faq-item details:hover {
-         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-    .orunk-faq-item summary {
-        padding: 1rem 1.25rem;
-        font-weight: 600;
-        color: #374151;
-        cursor: pointer;
-        list-style: none; /* Remove default marker */
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .orunk-faq-item summary::-webkit-details-marker { display: none; } /* Hide marker in Chrome/Safari */
-    .orunk-faq-item summary::after { /* Custom dropdown icon */
-        content: '+';
-        font-size: 1.2em;
-        font-weight: bold;
-        color: #9ca3af;
-        transition: transform 0.2s ease;
-    }
-    .orunk-faq-item details[open] summary::after {
-        content: '-';
-        transform: rotate(180deg);
-    }
-    .orunk-faq-item .faq-answer {
-        padding: 0 1.25rem 1.25rem 1.25rem;
-        font-size: 0.9em;
-        color: #6b7280;
-        line-height: 1.6;
-        border-top: 1px dashed #e5e7eb; /* Separator */
-        margin-top: 0.5rem;
-        padding-top: 1rem;
-    }
-
-    /* Ad Sidebar Specific Styles */
-    .orunk-ad-container {
-        padding: 0.5rem; /* Add some padding around ads */
-        text-align: center; /* Center ad units if they don't fill width */
-    }
-    /* Style the ad unit itself if needed - AdSense often controls this */
-    .adsbygoogle {
-        background-color: #f3f4f6; /* Placeholder background */
-        border: 1px dashed #d1d5db;
-        min-height: 150px; /* Minimum height to avoid collapse before ad loads */
-        display: block; /* Important for AdSense */
-        margin-bottom: 1rem; /* Space between ads if stacking */
-    }
-
-</style>
-<?php // --- END EMBEDDED CSS --- ?>
+<?php // --- REMOVED Embedded CSS Block --- ?>
 
 <div id="primary" <?php astra_primary_class(); ?>>
     <main id="main" class="site-main">
-        <?php // Wrap content and sidebars ?>
-        <div class="orunk-page-wrapper">
-
-            <?php // Left Sidebar for Ads ?>
-            <aside class="orunk-sidebar orunk-sidebar-left">
-                <div class="orunk-ad-container">
-                    <p style="font-size: 0.7rem; color: #9ca3af; margin-bottom: 5px;">Advertisement</p>
-                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4489112968240256" crossorigin="anonymous"></script>
-                    <ins class="adsbygoogle"
-                         style="display:block; width:160px; height:600px;" <?php // Example fixed size, adjust as needed ?>
-                         data-ad-client="ca-pub-4489112968240256"
-                         data-ad-slot="9686135945" <?php // Ensure this slot ID is correct for a sidebar format ?>
-                         ></ins> <?php // Removed format=auto, full-width-responsive for fixed size ?>
-                    <script>
-                         (adsbygoogle = window.adsbygoogle || []).push({});
-                    </script>
-                     <?php // You can add more ad units here if needed ?>
-                </div>
-            </aside>
-
-            <?php // Main Content Area ?>
+        <div class="orunk-page-wrapper max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10"> <?php // Reduced py ?>
             <div class="orunk-main-content">
-                <div class="orunk-catalog-container ast-container"> <?php // Use Astra container if needed inside, else remove ?>
-                    <div class="ast-row">
-                        <div class="ast-col-lg-12 ast-col-md-12 ast-col-sm-12 ast-col-xs-12"> <?php // Astra column ?>
 
-                            <?php /* Removed the <header> and <h1> title display */ ?>
-
-                            <div class="entry-content clear" itemprop="text">
-
-                                <?php
-                                // Display any purchase error messages passed back via query args
-                                if (isset($_GET['purchase_error'])) {
-                                    echo '<div class="orunk-purchase-error notice notice-error inline"><p><strong>' . esc_html__('Purchase Error:', 'orunk-users') . '</strong> ' . esc_html(urldecode($_GET['purchase_error'])) . '</p></div>';
-                                }
-                                 if (isset($_GET['payment_error'])) {
-                                     echo '<div class="orunk-payment-error notice notice-error inline"><p><strong>' . esc_html__('Payment Error:', 'orunk-users') . '</strong> ' . esc_html(urldecode($_GET['payment_error'])) . '</p></div>';
-                                 }
-                                ?>
-
-                                <?php if (empty($features_with_plans)) : ?>
-                                    <?php // Message if no features or plans are defined/active ?>
-                                    <p><?php esc_html_e('No products or plans are currently available for purchase.', 'orunk-users'); ?></p>
-                                <?php else : ?>
-
-                                    <?php // Loop through each Feature (e.g., BIN API, Ad Removal) ?>
-                                    <?php foreach ($features_with_plans as $feature) : ?>
-                                        <?php
-                                        $feature_key = $feature['feature'];
-                                        $plans = $feature['plans']; // Active plans for this feature
-                                        $active_plan_for_feature = null; // User's active plan for THIS feature
-
-                                        // Check if the current user has an active plan for this feature
-                                        if ($user_id) {
-                                            $active_plan_for_feature = $orunk_core->get_user_active_plan($user_id, $feature_key);
-                                        }
-                                        ?>
-                                        <?php // Use orunk-feature-section class ?>
-                                        <section class="orunk-feature-section orunk-feature-<?php echo esc_attr($feature_key); ?>">
-
-                                            <h2><?php echo esc_html($feature['product_name']); ?></h2>
-                                            <?php if (!empty($feature['description'])) : ?>
-                                                <?php // Use orunk-feature-description class ?>
-                                                <p class="orunk-feature-description"><?php echo wp_kses_post($feature['description']); // Allow basic HTML in description ?></p>
-                                            <?php endif; ?>
-
-                                            <?php // Display user's current plan status for this feature, if they have one ?>
-                                            <?php if ($active_plan_for_feature) : ?>
-                                                <?php // Use orunk-current-plan-info class ?>
-                                                <div class="orunk-current-plan-info notice notice-info inline">
-                                                    <p>
-                                                        <strong><?php esc_html_e('Your Current Plan:', 'orunk-users'); ?></strong> <?php echo esc_html($active_plan_for_feature['plan_name']); ?>.
-                                                        <?php if ($active_plan_for_feature['expiry_date']) : ?>
-                                                            <?php printf(esc_html__('Expires on: %s', 'orunk-users'), esc_html(date_i18n(get_option('date_format'), strtotime($active_plan_for_feature['expiry_date'])))); ?>
-                                                        <?php endif; ?>
-                                                        <a href="<?php echo esc_url(home_url('/orunk-dashboard/')); ?>"><?php esc_html_e('View Dashboard', 'orunk-users'); ?></a>
-                                                    </p>
-                                                </div>
-                                            <?php endif; ?>
-
-                                            <?php // Display plans only if there are active plans defined for this feature ?>
-                                            <?php if (!empty($plans)) : ?>
-                                                <?php // Use orunk-pricing-grid class for the grid container ?>
-                                                <div class="orunk-pricing-grid">
-                                                    <?php foreach ($plans as $plan) : ?>
-                                                        <?php // Use orunk-plan-card class. Add 'orunk-plan--active' if it's the user's current plan ?>
-                                                        <div class="orunk-plan-card orunk-plan-<?php echo esc_attr($plan['id']); ?> <?php echo ($active_plan_for_feature && $active_plan_for_feature['plan_id'] == $plan['id']) ? 'orunk-plan--active' : ''; ?>">
-                                                            <h3><?php echo esc_html($plan['plan_name']); ?></h3>
-
-                                                            <div class="orunk-plan-price">
-                                                                <?php if (floatval($plan['price']) == 0) : ?>
-                                                                    <strong><?php esc_html_e('Free', 'orunk-users'); ?></strong>
-                                                                <?php else : ?>
-                                                                    <strong>$<?php echo esc_html(number_format(floatval($plan['price']), 2)); ?></strong>
-                                                                    <?php // Add class for duration text ?>
-                                                                    <span class="duration"> / <?php echo esc_html($plan['duration_days']); ?> <?php esc_html_e('days', 'orunk-users'); ?></span>
-                                                                <?php endif; ?>
-                                                            </div>
-
-                                                            <?php if (!empty($plan['description'])) : ?>
-                                                                <p class="orunk-plan-description"><?php echo esc_html($plan['description']); ?></p>
-                                                            <?php endif; ?>
-
-                                                            <ul class="orunk-plan-features">
-                                                                 <li><span class="feature-icon">&#10004;</span><?php printf(esc_html__('%s Days Access', 'orunk-users'), esc_html($plan['duration_days'])); ?></li>
-                                                                <?php if (strpos($feature_key, '_api') !== false) : ?>
-                                                                    <li><span class="feature-icon">&#10004;</span>
-                                                                        <?php echo isset($plan['requests_per_day']) && $plan['requests_per_day'] !== null ? sprintf(esc_html__('%s Requests / Day', 'orunk-users'), esc_html(number_format_i18n($plan['requests_per_day']))) : esc_html__('Unlimited Daily Requests', 'orunk-users'); ?>
-                                                                    </li>
-                                                                    <li><span class="feature-icon">&#10004;</span>
-                                                                        <?php echo isset($plan['requests_per_month']) && $plan['requests_per_month'] !== null ? sprintf(esc_html__('%s Requests / Month', 'orunk-users'), esc_html(number_format_i18n($plan['requests_per_month']))) : esc_html__('Unlimited Monthly Requests', 'orunk-users'); ?>
-                                                                    </li>
-                                                                <?php endif; ?>
-                                                                <?php // Add other plan features dynamically if needed ?>
-                                                            </ul>
-
-                                                            <div class="orunk-plan-action">
-                                                                <?php // --- Purchase Button Logic (Keep PHP logic, update CSS classes) --- ?>
-                                                                <?php if ($active_plan_for_feature && $active_plan_for_feature['plan_id'] == $plan['id']) : // User has this specific plan active ?>
-                                                                    <button class="button orunk-button-active" disabled>
-                                                                        <i class="fas fa-check-circle"></i> <?php // Optional Icon ?>
-                                                                        <?php esc_html_e('Currently Active', 'orunk-users'); ?>
-                                                                    </button>
-                                                                <?php elseif ($active_plan_for_feature) : // User has a different active plan for this feature ?>
-                                                                    <?php $button_text = (floatval($plan['price']) > floatval($active_plan_for_feature['price'] ?? 0)) ? __('Upgrade', 'orunk-users') : __('Switch Plan', 'orunk-users'); ?>
-                                                                     <?php if (floatval($plan['price']) > 0) : ?>
-                                                                        <button class="button orunk-button-upgrade" disabled><?php echo esc_html($button_text); ?> (N/A)</button>
-                                                                     <?php else: ?>
-                                                                         <button class="button orunk-button-disabled" disabled><?php esc_html_e('Unavailable', 'orunk-users'); ?></button>
-                                                                     <?php endif; ?>
-                                                                <?php else : // User has no active plan for this feature ?>
-                                                                    <?php if (!is_user_logged_in()) : // User not logged in ?>
-                                                                        <a href="<?php echo esc_url(wp_login_url(get_permalink())); ?>" class="button orunk-button-primary">
-                                                                            <i class="fas fa-sign-in-alt"></i> <?php // Optional Icon ?>
-                                                                            <?php esc_html_e('Login to Purchase', 'orunk-users'); ?>
-                                                                        </a>
-                                                                    <?php elseif (empty($available_gateways) && floatval($plan['price']) > 0) : // Logged in, no payment gateways for paid plan ?>
-                                                                         <button class="button orunk-button-disabled" disabled><?php esc_html_e('Purchase Unavailable', 'orunk-users'); ?></button>
-                                                                         <p style="text-align: center; font-size: 0.8em; margin-top: 5px;"><small><?php esc_html_e('Payment methods unavailable.', 'orunk-users'); ?></small></p>
-                                                                    <?php else : // Logged in, show the purchase form ?>
-                                                                        <form method="POST" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="orunk-purchase-form">
-                                                                            <input type="hidden" name="action" value="orunk_purchase_plan">
-                                                                            <input type="hidden" name="plan_id" value="<?php echo esc_attr($plan['id']); ?>">
-                                                                            <input type="hidden" name="_wp_http_referer" value="<?php echo esc_url(wp_get_referer() ? wp_get_referer() : get_permalink()); // Send referring page URL ?>">
-                                                                            <?php wp_nonce_field('orunk_purchase_plan_' . $plan['id']); ?>
-
-                                                                            <?php if (floatval($plan['price']) > 0 && !empty($available_gateways)) : ?>
-                                                                                <?php // Use orunk-payment-gateways class ?>
-                                                                                <div class="orunk-payment-gateways" style="margin-bottom: 10px;">
-                                                                                    <label for="payment_gateway_<?php echo esc_attr($plan['id']); ?>"><?php esc_html_e('Pay with:', 'orunk-users'); ?></label>
-                                                                                    <select name="payment_gateway" id="payment_gateway_<?php echo esc_attr($plan['id']); ?>" required>
-                                                                                        <?php foreach ($available_gateways as $gateway) : ?>
-                                                                                            <option value="<?php echo esc_attr($gateway->id); ?>">
-                                                                                                <?php echo esc_html($gateway->get_option('title', $gateway->method_title)); ?>
-                                                                                            </option>
-                                                                                        <?php endforeach; ?>
-                                                                                    </select>
-                                                                                </div>
-                                                                            <?php else : // For free plan or if gateways are somehow missing for paid ?>
-                                                                                <input type="hidden" name="payment_gateway" value="<?php echo (floatval($plan['price']) == 0) ? 'free_checkout' : 'bank'; // Default to bank if paid but no gateways? Review logic. ?>">
-                                                                            <?php endif; ?>
-
-                                                                            <button type="submit" class="button orunk-button-primary">
-                                                                                <?php if(floatval($plan['price']) == 0): ?>
-                                                                                    <i class="fas fa-gift"></i> <?php // Optional Icon ?>
-                                                                                    <?php esc_html_e('Get Free Plan', 'orunk-users'); ?>
-                                                                                <?php else: ?>
-                                                                                    <i class="fas fa-shopping-cart"></i> <?php // Optional Icon ?>
-                                                                                    <?php esc_html_e('Purchase Plan', 'orunk-users'); ?>
-                                                                                <?php endif; ?>
-                                                                            </button>
-                                                                        </form>
-                                                                    <?php endif; // End logged-in check ?>
-                                                                <?php endif; // End active plan check ?>
-                                                                <?php // --- End Purchase Button Logic --- ?>
-                                                            </div> <?php // .orunk-plan-action ?>
-                                                        </div> <?php // .orunk-plan-card ?>
-                                                    <?php endforeach; // End loop through plans ?>
-                                                </div> <?php // .orunk-pricing-grid ?>
-                                            <?php else : // No active plans available for this feature ?>
-                                                <p><?php esc_html_e('There are currently no active plans available for this feature.', 'orunk-users'); ?></p>
-                                            <?php endif; ?>
-
-                                        </section> <?php // .orunk-feature-section ?>
-                                    <?php endforeach; // End loop through features ?>
-
-                                <?php endif; // End check for empty features_with_plans ?>
-
-                                <?php // --- FAQ Section --- ?>
-                                <section class="orunk-faq-section">
-                                    <h2><?php esc_html_e('Frequently Asked Questions', 'orunk-users'); ?></h2>
-                                    <div class="orunk-faq-grid">
-                                        <?php // Column 1 ?>
-                                        <div class="orunk-faq-column">
-                                            <div class="orunk-faq-item">
-                                                <details>
-                                                    <summary><?php esc_html_e('How do I purchase a plan?', 'orunk-users'); ?></summary>
-                                                    <div class="faq-answer">
-                                                        <p><?php esc_html_e('Simply choose the plan that best suits your needs from the options above. If you\'re not logged in, you\'ll be prompted to log in or create an account. Then, select your preferred payment method (if applicable) and click the purchase button.', 'orunk-users'); ?></p>
-                                                    </div>
-                                                </details>
-                                            </div>
-                                            <div class="orunk-faq-item">
-                                                <details>
-                                                    <summary><?php esc_html_e('What payment methods are accepted?', 'orunk-users'); ?></summary>
-                                                    <div class="faq-answer">
-                                                        <p><?php esc_html_e('We currently accept payments via Stripe (Credit/Debit Card) and Direct Bank Transfer. Available options for paid plans are shown below the plan details.', 'orunk-users'); ?></p>
-                                                    </div>
-                                                </details>
-                                            </div>
-                                             <div class="orunk-faq-item">
-                                                <details>
-                                                    <summary><?php esc_html_e('How are API limits counted?', 'orunk-users'); ?></summary>
-                                                    <div class="faq-answer">
-                                                        <p><?php esc_html_e('API limits are typically counted per successful request made using your unique API key. Daily limits reset every 24 hours (UTC), and monthly limits usually reset based on your purchase date or calendar month, depending on the specific plan configuration.', 'orunk-users'); ?></p>
-                                                    </div>
-                                                </details>
-                                            </div>
-                                        </div>
-                                        <?php // Column 2 ?>
-                                        <div class="orunk-faq-column">
-                                            <div class="orunk-faq-item">
-                                                <details>
-                                                    <summary><?php esc_html_e('Can I change my plan later?', 'orunk-users'); ?></summary>
-                                                    <div class="faq-answer">
-                                                        <p><?php esc_html_e('Yes, you can typically upgrade or switch between plans for the same feature directly from your dashboard. Downgrading or switching to a free plan might have specific conditions.', 'orunk-users'); ?></p>
-                                                    </div>
-                                                </details>
-                                            </div>
-                                            <div class="orunk-faq-item">
-                                                <details>
-                                                    <summary><?php esc_html_e('Where can I find my API key?', 'orunk-users'); ?></summary>
-                                                    <div class="faq-answer">
-                                                        <p><?php esc_html_e('If your purchased plan includes API access, your unique API key will be visible in your User Dashboard after the purchase is activated.', 'orunk-users'); ?></p>
-                                                    </div>
-                                                </details>
-                                            </div>
-                                             <div class="orunk-faq-item">
-                                                <details>
-                                                    <summary><?php esc_html_e('How do I cancel my subscription?', 'orunk-users'); ?></summary>
-                                                    <div class="faq-answer">
-                                                        <p><?php esc_html_e('You can manage your active subscriptions, including cancellation options, from your User Dashboard.', 'orunk-users'); ?></p>
-                                                    </div>
-                                                </details>
-                                            </div>
-                                        </div>
-                                    </div> <?php // end .orunk-faq-grid ?>
-                                </section>
-                                <?php // --- End FAQ Section --- ?>
-
-                            </div> <?php // .entry-content ?>
-                        </div> <?php // Astra theme column ?>
-                    </div> <?php // Astra theme row ?>
-                </div> <?php // .orunk-catalog-container / Astra theme container ?>
-            </div> <?php // .orunk-main-content ?>
-
-            <?php // Right Sidebar for Ads ?>
-            <aside class="orunk-sidebar orunk-sidebar-right">
-                <div class="orunk-ad-container">
-                     <p style="font-size: 0.7rem; color: #9ca3af; margin-bottom: 5px;">Advertisement</p>
-                     <?php // Using the same ad unit for both sides - CHANGE SLOT ID if needed ?>
-                    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4489112968240256" crossorigin="anonymous"></script>
-                    <ins class="adsbygoogle"
-                         style="display:block; width:160px; height:600px;" <?php // Example fixed size ?>
-                         data-ad-client="ca-pub-4489112968240256"
-                         data-ad-slot="9686135945"></ins> <?php // REMOVED format=auto, full-width-responsive ?>
-                    <script>
-                         (adsbygoogle = window.adsbygoogle || []).push({});
-                    </script>
-                    <?php // You can add more ad units here if needed ?>
+                <div class="text-center mb-8 md:mb-12"> <?php // Reduced mb ?>
+                     <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 mb-2"> <?php // Reduced mb ?>
+                        <?php esc_html_e('Digital Products', 'orunk-users'); ?>
+                    </h1>
+                    <p class="text-base text-gray-600 max-w-2xl mx-auto"> <?php // Reduced text size ?>
+                        <?php esc_html_e('Quality tools for your digital projects', 'orunk-users'); ?>
+                    </p>
                 </div>
-            </aside>
 
+                <div class="orunk-catalog-container">
+                    <div class="entry-content clear" itemprop="text">
+
+                        <?php /* Keep error message display */
+                        if (isset($_GET['purchase_error'])) { echo '<div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded" role="alert"><p><strong>' . esc_html__('Purchase Error:', 'orunk-users') . '</strong> ' . esc_html(urldecode($_GET['purchase_error'])) . '</p></div>'; }
+                        if (isset($_GET['payment_error'])) { echo '<div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded" role="alert"><p><strong>' . esc_html__('Payment Error:', 'orunk-users') . '</strong> ' . esc_html(urldecode($_GET['payment_error'])) . '</p></div>'; }
+                        ?>
+
+                        <?php if (empty($features_with_plans)) : ?>
+                             <p class="text-center text-gray-500 py-10"><?php esc_html_e('No products found matching your criteria.', 'orunk-users'); // Updated text ?></p>
+                        <?php else : ?>
+
+                            <?php // --- Filter Controls (Slightly more compact) --- ?>
+                            <div class="orunk-filter-controls bg-gray-50 p-4 rounded-lg border border-gray-200 mb-8">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center"> <?php // Changed to items-center ?>
+                                    <div class="orunk-search-filter md:col-span-1">
+                                        <label for="orunk-product-search" class="sr-only"><?php esc_html_e('Search Products', 'orunk-users'); ?></label> <?php // Screen reader only ?>
+                                        <input type="search" id="orunk-product-search"
+                                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                               placeholder="<?php esc_attr_e('Search...', 'orunk-users'); ?>"> <?php // Shorter placeholder ?>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <?php if (!empty($filtered_catalog_categories)): ?>
+                                            <ul class="orunk-category-tabs flex flex-wrap justify-center md:justify-end gap-2"> <?php // justify-end ?>
+                                                <li><a href="#all"
+                                                       class="category-tab px-3 py-1 text-xs font-medium rounded-full border transition duration-150 ease-in-out" <?php // Smaller padding/text ?>
+                                                       data-category="all"><?php esc_html_e('All', 'orunk-users'); ?></a></li> <?php // Shortened text ?>
+                                                <?php
+                                                foreach ($filtered_catalog_categories as $category) {
+                                                    echo '<li><a href="#' . esc_attr($category['category_slug']) . '"
+                                                               class="category-tab px-3 py-1 text-xs font-medium rounded-full border transition duration-150 ease-in-out" ' . // Smaller padding/text
+                                                               ' data-category="' . esc_attr($category['category_slug']) . '">' . esc_html($category['category_name']) . '</a></li>';
+                                                }
+                                                ?>
+                                            </ul>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php // --- END Filter Controls --- ?>
+
+                            <?php // --- Product Grid (More columns for compact) --- ?>
+                            <div class="orunk-product-grid grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"> <?php // Increased density ?>
+                                <?php foreach ($features_with_plans as $feature) : ?>
+                                    <?php
+                                        // --- Data Preparation ---
+                                        $feature_key = $feature['feature'];
+                                        $plans = $feature['plans'] ?? [];
+                                        $category_slug = esc_attr($feature['category'] ?? 'uncategorized');
+                                        $category_name = esc_html($category_name_map[$category_slug] ?? __('Other', 'orunk-users'));
+                                        $product_title = esc_html($feature['product_name']);
+                                        $product_description = $feature['description'] ?? '';
+                                        $product_description_plain = esc_attr(strip_tags(html_entity_decode($product_description)));
+                                        $detail_page_url = esc_url(home_url('/product-' . $feature_key . '/'));
+
+                                        // --- Price Calculation ---
+                                        $lowest_price = null; $all_free = true; $has_plans = !empty($plans);
+                                        if ($has_plans) { foreach ($plans as $plan) { if (isset($plan['price']) && is_numeric($plan['price'])) { $price = floatval($plan['price']); if ($price > 0) { $all_free = false; if ($lowest_price === null || $price < $lowest_price) { $lowest_price = $price; } } } } }
+                                        $price_text = '';
+                                        if (!$has_plans) { $price_text = __('N/A', 'orunk-users'); }
+                                        elseif ($all_free) { $price_text = __('Free', 'orunk-users'); }
+                                        elseif ($lowest_price !== null) { $formatted_price = number_format($lowest_price, 2); $price_text = sprintf(__('From %s', 'orunk-users'), '$' . $formatted_price); } // Changed "Starts at"
+                                        else { $price_text = __('See Details', 'orunk-users'); }
+
+                                        // --- Dummy Meta Data ---
+                                        $reviews_dummy = "4.7"; // Just number
+                                        $sales_dummy = "2k+"; // Shorter
+                                        $last_updated_dummy = date_i18n('M Y', current_time('timestamp') - (rand(7, 90) * DAY_IN_SECONDS)); // Month Year
+
+                                        // --- Badge Color Mapping (Example) ---
+                                        $badge_color_classes = 'bg-gray-100 text-gray-600 ring-1 ring-inset ring-gray-500/10'; // Default subtle ring
+                                        switch ($category_slug) {
+                                            case 'api-service': $badge_color_classes = 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-700/10'; break;
+                                            case 'website-feature': $badge_color_classes = 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-700/10'; break;
+                                            case 'wordpress-plugin': $badge_color_classes = 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20'; break;
+                                            case 'wordpress-theme': $badge_color_classes = 'bg-yellow-50 text-yellow-800 ring-1 ring-inset ring-yellow-600/20'; break;
+                                        }
+                                    ?>
+                                    <article class="orunk-product-card relative bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden flex flex-col h-full transition-shadow duration-150 ease-in-out hover:shadow-md"
+                                             data-category="<?php echo $category_slug; ?>"
+                                             data-title="<?php echo esc_attr($product_title); ?>"
+                                             data-description="<?php echo $product_description_plain; ?>">
+
+                                        <?php // --- Card Header: Badge --- ?>
+                                        <span class="absolute top-2.5 right-2.5 text-xs font-medium px-2 py-0.5 rounded-full <?php echo $badge_color_classes; ?>">
+                                            <?php echo $category_name; ?>
+                                        </span>
+
+                                        <?php // --- Card Main Content --- ?>
+                                        <div class="p-4 flex flex-col flex-grow"> <?php // Reduced padding ?>
+                                            <h2 class="text-base font-semibold text-gray-900 mb-1 mt-4"> <?php // Smaller text, margin ?>
+                                                <a href="<?php echo $detail_page_url; ?>" class="hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 rounded" title="<?php echo esc_attr($product_title); ?>">
+                                                     <?php echo $product_title; ?>
+                                                </a>
+                                            </h2>
+
+                                            <?php if (!empty($product_description)) : ?>
+                                                <p class="text-xs text-gray-500 mb-3 flex-grow line-clamp-3"> <?php // Smaller text, margin ?>
+                                                    <?php echo wp_kses_post($product_description); ?>
+                                                </p>
+                                            <?php else: ?>
+                                                <div class="flex-grow mb-3"></div> <?php // Spacer ?>
+                                            <?php endif; ?>
+
+                                            <?php // --- Card Meta Section (Compact) --- ?>
+                                             <div class="text-xs text-gray-500 mt-2 mb-3 border-t border-gray-100 pt-2 flex flex-wrap items-center gap-x-3 gap-y-1"> <?php // Smaller margin, padding, gap ?>
+                                                <span class="flex items-center gap-0.5" title="<?php esc_attr_e('Reviews', 'orunk-users'); ?>">
+                                                     <svg class="h-3.5 w-3.5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg> <?php // Smaller icon ?>
+                                                    <?php echo esc_html($reviews_dummy); ?>
+                                                </span>
+                                                 <span class="flex items-center gap-0.5" title="<?php esc_attr_e('Sales', 'orunk-users'); ?>">
+                                                    <svg class="h-3.5 w-3.5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L10 10.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v6a1 1 0 11-2 0V4a1 1 0 011-1z" clip-rule="evenodd" /></svg> <?php // Smaller icon ?>
+                                                    <?php echo esc_html($sales_dummy); ?>
+                                                </span>
+                                                <span class="flex items-center gap-0.5" title="<?php esc_attr_e('Last Updated', 'orunk-users'); ?>">
+                                                    <svg class="h-3.5 w-3.5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" /></svg> <?php // Smaller icon ?>
+                                                    <?php echo esc_html($last_updated_dummy); ?>
+                                                </span>
+                                            </div>
+
+                                            <?php // --- Card Footer (Compact) --- ?>
+                                            <div class="mt-auto flex justify-between items-center">
+                                                <p class="text-sm font-medium text-gray-800 whitespace-nowrap"> <?php // Slightly less prominent price ?>
+                                                    <?php echo esc_html($price_text); ?>
+                                                </p>
+                                                <a href="<?php echo $detail_page_url; ?>"
+                                                   class="orunk-view-details-button inline-flex items-center justify-center px-2.5 py-1 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 whitespace-nowrap transition ease-in-out duration-150"> <?php // Smaller padding ?>
+                                                    <?php esc_html_e('Details', 'orunk-users'); // Shorter text ?>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </article> <?php // .orunk-product-card ?>
+                                <?php endforeach; // End loop through features ?>
+                            </div> <?php // .orunk-product-grid ?>
+                            <?php // --- END Product Grid --- ?>
+
+                             <?php // --- ADD Load More Button Placeholder (Requires JS Implementation) --- ?>
+                             <div id="orunk-load-more-container" class="text-center mt-8 hidden"> <?php // Initially hidden ?>
+                                 <button id="orunk-load-more-btn" class="inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                     <?php esc_html_e('Load More Products', 'orunk-users'); ?>
+                                     <svg class="ml-2 -mr-1 h-4 w-4 animate-spin hidden" id="orunk-load-more-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                     </svg>
+                                 </button>
+                                 <p id="orunk-all-loaded-msg" class="text-sm text-gray-500 mt-2 hidden"><?php esc_html_e('All products loaded.', 'orunk-users'); ?></p>
+                             </div>
+                             <?php // --- END Load More --- ?>
+
+                        <?php endif; // End check for empty features_with_plans ?>
+
+                        <?php // --- FAQ Section --- ?>
+                        <section class="orunk-faq-section mt-12 md:mt-16 pt-8 border-t border-gray-200"> <?php // Reduced margins ?>
+                             <h2 class="text-xl sm:text-2xl font-bold text-gray-900 text-center mb-6 md:mb-10"> <?php // Reduced size/margin ?>
+                                 <?php esc_html_e('Frequently Asked Questions', 'orunk-users'); ?>
+                             </h2>
+                            <div class="orunk-faq-grid max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"> <?php // Reduced gaps ?>
+                                <?php /* FAQ content remains the same */
+                                $faqs = [ /* Same FAQs as before */
+                                    ['q' => __('How do I purchase a plan?', 'orunk-users'), 'a' => __('Click "Details" for the product you are interested in. On the product detail page, you will find available plans. Choose the plan that suits you, log in or create an account if needed, select a payment method (if applicable), and complete the purchase.', 'orunk-users')],
+                                    ['q' => __('Can I change my plan later?', 'orunk-users'), 'a' => __('Yes, you can typically upgrade or switch between plans for the same feature directly from your User Dashboard. Downgrading or switching to a free plan might have specific conditions outlined in the dashboard.', 'orunk-users')],
+                                    ['q' => __('What payment methods are accepted?', 'orunk-users'), 'a' => __('We currently accept payments via Stripe (Credit/Debit Card) and Direct Bank Transfer. Available options for paid plans are shown on the product detail and checkout pages.', 'orunk-users')],
+                                    ['q' => __('Where can I find my API key?', 'orunk-users'), 'a' => __('If your purchased plan includes API access, your unique API key will be visible in your User Dashboard after the purchase is activated.', 'orunk-users')],
+                                    ['q' => __('How are API limits counted?', 'orunk-users'), 'a' => __('API limits are typically counted per successful request made using your unique API key. Daily limits reset every 24 hours (UTC), and monthly limits usually reset based on your purchase date or calendar month, depending on the specific plan configuration found on the product detail page.', 'orunk-users')],
+                                    ['q' => __('How do I cancel my subscription?', 'orunk-users'), 'a' => __('You can manage your active subscriptions, including cancellation options, from your User Dashboard.', 'orunk-users')],
+                                ];
+                                foreach ($faqs as $faq): ?>
+                                     <div class="orunk-faq-item border border-gray-200 rounded-lg">
+                                         <details class="group">
+                                             <summary class="flex justify-between items-center p-3 cursor-pointer list-none"> <?php // Reduced padding ?>
+                                                 <span class="text-sm font-medium text-gray-900"><?php echo esc_html($faq['q']); ?></span> <?php // Reduced size ?>
+                                                 <span class="text-gray-400 group-open:rotate-180 transition-transform duration-200">
+                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg> <?php // Smaller icon ?>
+                                                 </span>
+                                             </summary>
+                                             <div class="faq-answer px-3 pb-3 text-xs text-gray-600 border-t border-gray-100 pt-2"> <?php // Smaller text/padding ?>
+                                                 <p><?php echo esc_html($faq['a']); ?></p>
+                                             </div>
+                                         </details>
+                                     </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </section>
+                        <?php // --- End FAQ Section --- ?>
+
+                    </div> <?php // .entry-content ?>
+                </div> <?php // .orunk-catalog-container ?>
+            </div> <?php // .orunk-main-content ?>
         </div> <?php // .orunk-page-wrapper ?>
     </main>
 </div> <?php // #primary ?>
 
+<?php // --- JavaScript for Filtering (Needs update for Load More/Pagination if implemented) --- ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('orunk-product-search');
+    const tabsContainer = document.querySelector('.orunk-category-tabs');
+    const productGrid = document.querySelector('.orunk-product-grid');
+
+    // --- Load More/Pagination Variables (Placeholder - Requires implementation) ---
+    const loadMoreContainer = document.getElementById('orunk-load-more-container');
+    const loadMoreBtn = document.getElementById('orunk-load-more-btn');
+    const loadMoreSpinner = document.getElementById('orunk-load-more-spinner');
+    const allLoadedMsg = document.getElementById('orunk-all-loaded-msg');
+    const itemsPerPage = 15; // CONFIG: How many items to show per "page" or "load"
+    let visibleItemCount = 0;
+    let allProductCards = []; // Will hold all card elements
+    // --- End Load More ---
+
+
+    if (!searchInput || !tabsContainer || !productGrid) {
+        return; // Exit if elements aren't found
+    }
+
+    // Store all cards initially
+    allProductCards = Array.from(productGrid.querySelectorAll('.orunk-product-card'));
+
+    const categoryTabs = tabsContainer.querySelectorAll('.category-tab');
+    // Define Tailwind classes for active/inactive states (Adjust if your theme/config differs)
+    const activeTabClasses = ['bg-indigo-600', 'text-white', 'border-indigo-600'];
+    const inactiveTabClasses = ['bg-white', 'text-gray-600', 'border-gray-300', 'hover:bg-gray-50', 'hover:border-gray-400', 'hover:text-gray-700']; // Adjusted inactive style
+
+    let currentCategoryFilter = 'all';
+    let currentSearchTerm = '';
+    let debounceTimer;
+    let currentlyVisibleCards = []; // Track cards matching filters
+
+    // --- Filter Function (Handles Search + Category) ---
+    function filterAndPrepareDisplay() {
+        currentSearchTerm = searchInput.value.toLowerCase().trim();
+        currentlyVisibleCards = []; // Reset the list of cards matching filters
+
+        allProductCards.forEach(card => {
+            const cardCategory = card.getAttribute('data-category') || 'uncategorized';
+            const cardTitle = (card.getAttribute('data-title') || '').toLowerCase();
+            const cardDescription = (card.getAttribute('data-description') || '').toLowerCase();
+
+            const categoryMatch = (currentCategoryFilter === 'all' || cardCategory === currentCategoryFilter);
+            const searchMatch = (currentSearchTerm === '' || cardTitle.includes(currentSearchTerm) || cardDescription.includes(currentSearchTerm));
+
+            // Important: Hide ALL cards initially within this function
+            card.classList.add('hidden');
+
+            if (categoryMatch && searchMatch) {
+                currentlyVisibleCards.push(card); // Add card to the list that matches filters
+            }
+        });
+
+        // Reset and display the first batch based on filters
+        displayItems(0, itemsPerPage, true); // Reset display
+    }
+
+    // --- Display Function (For Load More/Pagination) ---
+    function displayItems(start, count, isReset = false) {
+         if (isReset) {
+             visibleItemCount = 0; // Reset count only if it's a new filter/initial load
+             // Hide all cards (redundant if filterAndPrepareDisplay hid them, but safe)
+             // allProductCards.forEach(card => card.classList.add('hidden'));
+         }
+
+         const end = Math.min(start + count, currentlyVisibleCards.length);
+
+         for (let i = start; i < end; i++) {
+             if (currentlyVisibleCards[i]) {
+                 currentlyVisibleCards[i].classList.remove('hidden');
+             }
+         }
+         visibleItemCount = end; // Update the count of items *now* visible
+
+         // --- Update Load More Button State ---
+         updateLoadMoreVisibility();
+    }
+
+     // --- Update Load More Button ---
+     function updateLoadMoreVisibility() {
+        if (!loadMoreContainer || !loadMoreBtn || !allLoadedMsg) return; // Exit if elements missing
+
+         if (currentlyVisibleCards.length === 0) {
+              // Optional: Show a "No results" message within the grid area?
+              // productGrid.innerHTML = '<p class="col-span-full text-center text-gray-500 py-10">No products match your criteria.</p>'; // Example message
+              loadMoreContainer.classList.add('hidden'); // Hide button if no results
+         } else {
+             // productGrid.querySelector('.no-results')?.remove(); // Remove no results message if present
+             if (visibleItemCount >= currentlyVisibleCards.length) {
+                 loadMoreBtn.classList.add('hidden'); // Hide button
+                 allLoadedMsg.classList.remove('hidden'); // Show "All loaded" message
+                 loadMoreContainer.classList.remove('hidden'); // Keep container visible for msg
+             } else {
+                 loadMoreBtn.classList.remove('hidden'); // Show button
+                 allLoadedMsg.classList.add('hidden'); // Hide "All loaded" message
+                 loadMoreContainer.classList.remove('hidden'); // Show container
+             }
+             // Reset spinner state
+             loadMoreBtn.disabled = false;
+             loadMoreSpinner?.classList.add('hidden');
+         }
+     }
+
+
+    // --- Set Active Tab Styling ---
+    function setActiveTab(activeTabElement) {
+         categoryTabs.forEach(tab => {
+             tab.classList.remove(...activeTabClasses);
+             tab.classList.add(...inactiveTabClasses);
+             tab.classList.remove('category-tab-active');
+         });
+         activeTabElement.classList.add(...activeTabClasses);
+         activeTabElement.classList.remove(...inactiveTabClasses);
+         activeTabElement.classList.add('category-tab-active');
+         currentCategoryFilter = activeTabElement.getAttribute('data-category') || 'all';
+    }
+
+    // --- Event Listeners ---
+    searchInput.addEventListener('input', function() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            filterAndPrepareDisplay(); // Rerun filter and display first page
+        }, 350); // Slightly longer debounce maybe
+    });
+
+    categoryTabs.forEach(tab => {
+        tab.addEventListener('click', function(event) {
+            event.preventDefault();
+            if (this.classList.contains('category-tab-active')) return;
+            setActiveTab(this);
+            filterAndPrepareDisplay(); // Rerun filter and display first page
+            if (history.pushState) { history.pushState(null, null, '#' + currentCategoryFilter); } else { location.hash = '#' + currentCategoryFilter; }
+        });
+    });
+
+     // --- Load More Button Listener ---
+     if (loadMoreBtn) {
+         loadMoreBtn.addEventListener('click', function() {
+             this.disabled = true; // Prevent double clicks
+             loadMoreSpinner?.classList.remove('hidden');
+
+             // Simulate loading delay (optional) then load next batch
+             setTimeout(() => {
+                const nextBatchStart = visibleItemCount;
+                displayItems(nextBatchStart, itemsPerPage);
+                 // Spinner hidden within updateLoadMoreVisibility called by displayItems
+             }, 150); // Short delay
+         });
+     }
+
+    // --- Initial Filter Logic on Page Load ---
+    function applyInitialFilter() {
+        let initialCategory = 'all';
+        let activeTabElement = document.querySelector('.category-tab[data-category="all"]');
+
+        if (window.location.hash && window.location.hash !== '#') {
+             const hashCategory = window.location.hash.substring(1);
+             const matchingTab = document.querySelector(`.category-tab[data-category="${hashCategory}"]`);
+             if (matchingTab) {
+                 initialCategory = hashCategory;
+                 activeTabElement = matchingTab;
+             }
+         }
+
+        if (activeTabElement) {
+             setActiveTab(activeTabElement);
+        }
+        currentCategoryFilter = initialCategory;
+        currentSearchTerm = searchInput.value.toLowerCase().trim();
+
+        // Filter and display the *first* page only on initial load
+        filterAndPrepareDisplay();
+    }
+
+    applyInitialFilter();
+
+});
+</script>
+<?php // --- END Filter JavaScript --- ?>
+
 <?php
-get_footer(); // Include theme footer
+get_footer();
 ?>
